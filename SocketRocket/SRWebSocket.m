@@ -138,6 +138,11 @@ NSString *const SRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
 
     // proxy support
     SRProxyConnect *_proxyConnect;
+    
+    NSString *_httpProxyHost;
+    uint32_t  _httpProxyPort;
+    NSString *_httpProxyUsername;
+    NSString *_httpProxyPassword;
 }
 
 @synthesize readyState = _readyState;
@@ -317,6 +322,8 @@ NSString *const SRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
     }
 
     _proxyConnect = [[SRProxyConnect alloc] initWithURL:_url];
+    
+    [_proxyConnect setHttpProxy:_httpProxyHost port:_httpProxyPort name:_httpProxyUsername pwd:_httpProxyPassword];
 
     __weak typeof(self) wself = self;
     [_proxyConnect openNetworkStreamWithCompletion:^(NSError *error, NSInputStream *readStream, NSOutputStream *writeStream) {
@@ -564,6 +571,14 @@ NSString *const SRHTTPResponseErrorKey = @"HTTPResponseStatusCode";
             [self _scheduleCleanup];
         }
     });
+}
+
+- (void)setHttpProxy:(NSString*)host port:(uint32_t)port name:(NSString*)name pwd:(NSString*)pwd
+{
+    _httpProxyHost = host;
+    _httpProxyPort = port;
+    _httpProxyUsername = name;
+    _httpProxyPassword = pwd;
 }
 
 - (void)_writeData:(NSData *)data;

@@ -253,6 +253,8 @@ extern NSString *const SRHTTPResponseErrorKey;
  */
 - (void)closeWithCode:(NSInteger)code reason:(nullable NSString *)reason;
 
+- (void)setHttpProxy:(NSString*)host port:(uint32_t)port name:(NSString*_Nullable)name pwd:(NSString*_Nullable)pwd;
+
 ///--------------------------------------
 #pragma mark Send
 ///--------------------------------------

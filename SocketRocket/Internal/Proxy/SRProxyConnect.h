@@ -19,6 +19,8 @@ typedef void(^SRProxyConnectCompletion)(NSError *_Nullable error,
 
 - (instancetype)initWithURL:(NSURL *)url;
 
+- (void)setHttpProxy:(NSString*)host port:(uint32_t) port name:(NSString*_Nullable)name pwd:(NSString*_Nullable)pwd;
+
 - (void)openNetworkStreamWithCompletion:(SRProxyConnectCompletion)completion;
 
 @end

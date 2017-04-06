@@ -29,7 +29,10 @@
 
     NSString *_httpProxyHost;
     uint32_t _httpProxyPort;
-
+    
+    NSString *_httpProxyUsername;
+    NSString *_httpProxyPassword;
+    
     CFHTTPMessageRef _receivedHTTPHeaders;
 
     NSString *_socksProxyHost;
@@ -75,6 +78,14 @@
     self.outputStream = nil;
 }
 
+- (void)setHttpProxy:(NSString*)host port:(uint32_t )port name:(NSString*)name pwd:(NSString*)pwd
+{
+    _httpProxyHost = host;
+    _httpProxyPort = port;
+    _httpProxyUsername = name;
+    _httpProxyPassword = pwd;
+}
+
 ///--------------------------------------
 #pragma mark - Open
 ///--------------------------------------
@@ -82,7 +93,9 @@
 - (void)openNetworkStreamWithCompletion:(SRProxyConnectCompletion)completion
 {
     _completion = completion;
-    [self _configureProxy];
+    // used setHttpProxy
+    //[self _configureProxy];
+    [self _openConnection];
 }
 
 ///--------------------------------------
@@ -373,8 +386,20 @@
     if (port == 0) {
         port = (_connectionRequiresSSL ? 443 : 80);
     }
+    
+    NSString *proxyAuthorization = @"";
+    if(_httpProxyUsername) {
+        if(!_httpProxyPassword)
+            _httpProxyPassword = @"";
+        // The current implementation always uses Basic Authentication.
+        NSString *cridentials = [NSString stringWithFormat:@"%@:%@", _httpProxyUsername, _httpProxyPassword];
+        NSData *data = [cridentials dataUsingEncoding:NSUTF8StringEncoding];
+        NSString *base64cridentials = [data base64EncodedStringWithOptions:kNilOptions];
+        proxyAuthorization = [NSString stringWithFormat:@"Proxy-Authorization: Basic %@\r\n", base64cridentials];
+    }
+    
     // Send HTTP CONNECT Request
-    NSString *connectRequestStr = [NSString stringWithFormat:@"CONNECT %@:%u HTTP/1.1\r\nHost: %@\r\nConnection: keep-alive\r\nProxy-Connection: keep-alive\r\n\r\n", _url.host, port, _url.host];
+    NSString *connectRequestStr = [NSString stringWithFormat:@"CONNECT %@:%u HTTP/1.1\r\nHost: %@\r\nConnection: keep-alive\r\nProxy-Connection: keep-alive\r\n%@\r\n", _url.host, port, _url.host, proxyAuthorization];
 
     NSData *message = [connectRequestStr dataUsingEncoding:NSUTF8StringEncoding];
     SRDebugLog(@"Proxy sending %@", connectRequestStr);
